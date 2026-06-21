@@ -23,8 +23,6 @@
       ready: "Готово к установке",
       opening: "Открываем Safari…",
       install: "Установить",
-      hint: "Нажмите «Установить» — Safari откроется отдельно, Telegram останется.",
-      retry: "Нажмите ещё раз, если Safari не открылся.",
       errorLink: "Ссылка недействительна. Получите сертификат заново в боте.",
       errorNoUrl: "Ссылка установки не найдена.",
     },
@@ -33,8 +31,6 @@
       ready: "Ready to install",
       opening: "Opening Safari…",
       install: "Install",
-      hint: "Tap Install — Safari opens separately, Telegram stays open.",
-      retry: "Tap again if Safari did not open.",
       errorLink: "Invalid link. Get the certificate again from the bot.",
       errorNoUrl: "Install link not found.",
     },
@@ -52,7 +48,6 @@
   const bundleEl = document.getElementById("bundle-id");
   const loaderEl = document.getElementById("loader");
   const installBtn = document.getElementById("install-btn");
-  const hintEl = document.getElementById("hint");
   const errorEl = document.getElementById("error");
 
   let installUrl = "";
@@ -132,7 +127,6 @@
     if (!installUrl) return;
 
     subtitleEl.textContent = t("opening");
-    hintEl.textContent = t("retry");
 
     if (tg && typeof tg.openLink === "function") {
       tg.openLink(installUrl, { try_instant_view: false });
@@ -192,7 +186,6 @@
 
     subtitleEl.textContent = t("loading");
     installBtn.textContent = t("install");
-    hintEl.textContent = t("hint");
     installBtn.addEventListener("click", openInSafari, { passive: false });
 
     const data = readDirectParams();
