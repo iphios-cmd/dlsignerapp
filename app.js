@@ -1,7 +1,15 @@
 (function () {
   "use strict";
 
-  const SIGNER_ICONS = {
+  const SIGNER_IMAGES = {
+    esign: "icons/esign.jpg",
+    ksign: "icons/ksign.jpg",
+    feather: "icons/feather.jpg",
+    gbox: "icons/gbox.jpg",
+    scarlet: "icons/scarlet.jpg",
+  };
+
+  const SIGNER_FALLBACK_LETTERS = {
     esign: "E",
     ksign: "K",
     feather: "F",
@@ -37,6 +45,8 @@
 
   const card = document.getElementById("card");
   const iconEl = document.getElementById("icon");
+  const iconImg = document.getElementById("icon-img");
+  const iconFallback = document.getElementById("icon-fallback");
   const appNameEl = document.getElementById("app-name");
   const subtitleEl = document.getElementById("subtitle");
   const bundleEl = document.getElementById("bundle-id");
@@ -70,14 +80,46 @@
     installBtn.hidden = true;
   }
 
+  function signerIconUrl(signerId) {
+    const rel = SIGNER_IMAGES[signerId];
+    if (!rel) return "icons/unknown.svg";
+    try {
+      return new URL(rel, window.location.href).href;
+    } catch (_err) {
+      return rel;
+    }
+  }
+
+  function showIconFallback(signerId, name) {
+    iconImg.hidden = true;
+    iconImg.removeAttribute("src");
+    iconFallback.hidden = false;
+    iconFallback.textContent =
+      SIGNER_FALLBACK_LETTERS[signerId] || name.charAt(0).toUpperCase() || "?";
+    iconEl.classList.add("has-fallback");
+  }
+
   function applySignerUi(data) {
     const signerId = (data.signer_id || "unknown").toLowerCase();
     const name = data.app_name || "App";
     const bundle = data.bundle_id || "";
 
     appNameEl.textContent = name;
-    iconEl.textContent = SIGNER_ICONS[signerId] || name.charAt(0).toUpperCase();
     iconEl.className = "icon " + signerId;
+    iconEl.classList.remove("has-fallback");
+    iconFallback.hidden = true;
+    iconImg.hidden = false;
+    iconImg.alt = name;
+    iconImg.onload = function () {
+      iconEl.classList.remove("has-fallback");
+      iconFallback.hidden = true;
+      iconImg.hidden = false;
+    };
+    iconImg.onerror = function () {
+      showIconFallback(signerId, name);
+    };
+    iconImg.src = signerIconUrl(signerId);
+
     bundleEl.textContent = bundle ? bundle : "";
     bundleEl.style.display = bundle ? "block" : "none";
   }
