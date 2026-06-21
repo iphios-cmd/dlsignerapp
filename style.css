@@ -174,13 +174,6 @@ body {
   transform: none;
 }
 
-.hint {
-  margin-top: 18px;
-  font-size: 13px;
-  line-height: 1.5;
-  color: var(--text-secondary);
-}
-
 .error {
   margin-top: 16px;
   font-size: 14px;
