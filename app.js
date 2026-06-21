@@ -2,11 +2,11 @@
   "use strict";
 
   const SIGNER_IMAGES = {
-    esign: "icons/esign.jpg",
-    ksign: "icons/ksign.jpg",
-    feather: "icons/feather.jpg",
-    gbox: "icons/gbox.jpg",
-    scarlet: "icons/scarlet.jpg",
+    esign: ["icons/esign.jpg", "icons/esign.svg"],
+    ksign: ["icons/ksign.jpg", "icons/ksign.svg"],
+    feather: ["icons/feather.jpg", "icons/feather.svg"],
+    gbox: ["icons/gbox.jpg", "icons/gbox.svg"],
+    scarlet: ["icons/scarlet.jpg", "icons/scarlet.svg"],
   };
 
   const SIGNER_FALLBACK_LETTERS = {
@@ -25,6 +25,7 @@
       install: "Установить",
       errorLink: "Ссылка недействительна. Получите сертификат заново в боте.",
       errorNoUrl: "Ссылка установки не найдена.",
+      errorInit: "Не удалось открыть страницу. Обновите Mini App.",
     },
     en: {
       loading: "Preparing install…",
@@ -33,6 +34,7 @@
       install: "Install",
       errorLink: "Invalid link. Get the certificate again from the bot.",
       errorNoUrl: "Install link not found.",
+      errorInit: "Failed to load. Refresh the Mini App.",
     },
   };
 
@@ -68,16 +70,23 @@
   }
 
   function setError(message) {
-    card.classList.add("error-state");
-    loaderEl.hidden = true;
-    errorEl.hidden = false;
-    errorEl.textContent = message;
-    installBtn.hidden = true;
+    if (card) card.classList.add("error-state");
+    if (loaderEl) loaderEl.hidden = true;
+    if (errorEl) {
+      errorEl.hidden = false;
+      errorEl.textContent = message;
+    }
+    if (installBtn) installBtn.hidden = true;
   }
 
-  function signerIconUrl(signerId) {
-    const rel = SIGNER_IMAGES[signerId];
-    if (!rel) return "icons/unknown.svg";
+  function showReady() {
+    if (card) card.classList.add("ready");
+    if (loaderEl) loaderEl.hidden = true;
+    if (subtitleEl) subtitleEl.textContent = t("ready");
+    if (installBtn) installBtn.hidden = false;
+  }
+
+  function absUrl(rel) {
     try {
       return new URL(rel, window.location.href).href;
     } catch (_err) {
@@ -86,12 +95,53 @@
   }
 
   function showIconFallback(signerId, name) {
-    iconImg.hidden = true;
-    iconImg.removeAttribute("src");
-    iconFallback.hidden = false;
-    iconFallback.textContent =
-      SIGNER_FALLBACK_LETTERS[signerId] || name.charAt(0).toUpperCase() || "?";
+    if (!iconEl) return;
+    if (iconImg) {
+      iconImg.hidden = true;
+      iconImg.removeAttribute("src");
+    }
+    if (iconFallback) {
+      iconFallback.hidden = false;
+      iconFallback.textContent =
+        SIGNER_FALLBACK_LETTERS[signerId] || name.charAt(0).toUpperCase() || "?";
+    }
     iconEl.classList.add("has-fallback");
+  }
+
+  function loadSignerIcon(signerId, name) {
+    if (!iconEl) return;
+
+    iconEl.className = "icon " + signerId;
+    iconEl.classList.remove("has-fallback");
+
+    const candidates = SIGNER_IMAGES[signerId] || ["icons/unknown.svg"];
+    let index = 0;
+
+    function tryNext() {
+      if (!iconImg) {
+        showIconFallback(signerId, name);
+        return;
+      }
+      if (index >= candidates.length) {
+        showIconFallback(signerId, name);
+        return;
+      }
+      iconImg.onload = function () {
+        iconEl.classList.remove("has-fallback");
+        if (iconFallback) iconFallback.hidden = true;
+        iconImg.hidden = false;
+      };
+      iconImg.onerror = function () {
+        index += 1;
+        tryNext();
+      };
+      iconImg.hidden = false;
+      iconImg.alt = name;
+      iconImg.src = absUrl(candidates[index]);
+    }
+
+    if (iconFallback) iconFallback.hidden = true;
+    tryNext();
   }
 
   function applySignerUi(data) {
@@ -99,24 +149,13 @@
     const name = data.app_name || "App";
     const bundle = data.bundle_id || "";
 
-    appNameEl.textContent = name;
-    iconEl.className = "icon " + signerId;
-    iconEl.classList.remove("has-fallback");
-    iconFallback.hidden = true;
-    iconImg.hidden = false;
-    iconImg.alt = name;
-    iconImg.onload = function () {
-      iconEl.classList.remove("has-fallback");
-      iconFallback.hidden = true;
-      iconImg.hidden = false;
-    };
-    iconImg.onerror = function () {
-      showIconFallback(signerId, name);
-    };
-    iconImg.src = signerIconUrl(signerId);
+    if (appNameEl) appNameEl.textContent = name;
+    loadSignerIcon(signerId, name);
 
-    bundleEl.textContent = bundle ? bundle : "";
-    bundleEl.style.display = bundle ? "block" : "none";
+    if (bundleEl) {
+      bundleEl.textContent = bundle ? bundle : "";
+      bundleEl.style.display = bundle ? "block" : "none";
+    }
   }
 
   function openInSafari(event) {
@@ -126,7 +165,7 @@
     }
     if (!installUrl) return;
 
-    subtitleEl.textContent = t("opening");
+    if (subtitleEl) subtitleEl.textContent = t("opening");
 
     if (tg && typeof tg.openLink === "function") {
       tg.openLink(installUrl, { try_instant_view: false });
@@ -177,34 +216,37 @@
   }
 
   function init() {
-    if (tg) {
-      tg.ready();
-      tg.expand();
-      if (tg.setHeaderColor) tg.setHeaderColor("secondary_bg_color");
-      if (tg.setBackgroundColor) tg.setBackgroundColor("bg_color");
+    try {
+      if (tg) {
+        tg.ready();
+        tg.expand();
+        if (tg.setHeaderColor) tg.setHeaderColor("secondary_bg_color");
+        if (tg.setBackgroundColor) tg.setBackgroundColor("bg_color");
+      }
+
+      if (subtitleEl) subtitleEl.textContent = t("loading");
+      if (installBtn) {
+        installBtn.textContent = t("install");
+        installBtn.addEventListener("click", openInSafari, { passive: false });
+      }
+
+      const data = readDirectParams();
+      if (!data) {
+        setError(t("errorLink"));
+        return;
+      }
+
+      installUrl = (data.install_url || "").trim();
+      if (!installUrl) {
+        setError(t("errorNoUrl"));
+        return;
+      }
+
+      applySignerUi(data);
+      showReady();
+    } catch (_err) {
+      setError(t("errorInit"));
     }
-
-    subtitleEl.textContent = t("loading");
-    installBtn.textContent = t("install");
-    installBtn.addEventListener("click", openInSafari, { passive: false });
-
-    const data = readDirectParams();
-    if (!data) {
-      setError(t("errorLink"));
-      return;
-    }
-
-    installUrl = (data.install_url || "").trim();
-    if (!installUrl) {
-      setError(t("errorNoUrl"));
-      return;
-    }
-
-    applySignerUi(data);
-    card.classList.add("ready");
-    loaderEl.hidden = true;
-    subtitleEl.textContent = t("ready");
-    installBtn.hidden = false;
   }
 
   init();
