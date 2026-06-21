@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+  <meta name="theme-color" content="#f5f5f7" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)" />
+  <title>Install</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+  <div class="page">
+    <div class="card" id="card">
+      <div class="icon-wrap" id="icon-wrap" aria-hidden="true">
+        <div class="icon" id="icon"></div>
+      </div>
+      <h1 class="title" id="app-name">…</h1>
+      <p class="subtitle" id="subtitle">Загрузка</p>
+      <p class="bundle" id="bundle-id"></p>
+
+      <div class="loader" id="loader" aria-hidden="true">
+        <div class="spinner"></div>
+      </div>
+
+      <button class="install-btn" id="install-btn" type="button" hidden>
+        Установить
+      </button>
+
+      <p class="hint" id="hint"></p>
+      <p class="error" id="error" hidden></p>
+    </div>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
