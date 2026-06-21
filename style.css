@@ -79,19 +79,32 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
+  background: #f2f2f7;
+}
+
+.icon-img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.icon-fallback {
   font-size: 36px;
   font-weight: 600;
   letter-spacing: -0.02em;
   color: #fff;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
 }
 
-.icon.esign { background: linear-gradient(145deg, #34c759, #248a3d); }
-.icon.ksign { background: linear-gradient(145deg, #5856d6, #3634a3); }
-.icon.feather { background: linear-gradient(145deg, #ff9500, #c93400); }
-.icon.gbox { background: linear-gradient(145deg, #007aff, #0040dd); }
-.icon.scarlet { background: linear-gradient(145deg, #ff2d55, #d70015); }
-.icon.unknown { background: linear-gradient(145deg, #8e8e93, #636366); }
+.icon.has-fallback.esign { background: linear-gradient(145deg, #34c759, #248a3d); }
+.icon.has-fallback.ksign { background: linear-gradient(145deg, #5856d6, #3634a3); }
+.icon.has-fallback.feather { background: linear-gradient(145deg, #ff9500, #c93400); }
+.icon.has-fallback.gbox { background: linear-gradient(145deg, #007aff, #0040dd); }
+.icon.has-fallback.scarlet { background: linear-gradient(145deg, #ff2d55, #d70015); }
+.icon.has-fallback.unknown { background: linear-gradient(145deg, #8e8e93, #636366); }
 
 .title {
   font-size: 28px;
